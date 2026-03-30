@@ -1,0 +1,9 @@
+pandas
+numpy
+scikit-learn
+matplotlib==3.7.5
+seaborn
+joblib
+altair==4.2.2
+pillow==10.0.0
+
