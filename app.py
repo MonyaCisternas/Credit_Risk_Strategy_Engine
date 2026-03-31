@@ -213,12 +213,12 @@ elif page == "Credit Decision Tool":
             st.markdown("### Recommended Strategy")
             st.info(decision)
 
-            if risk == "High":
+            if "Decline" in decision:
                 st.error("This customer has a high likelihood of default and may result in financial loss.")
-            elif risk == "Medium":
+            elif "High Interest" in decision:
                 st.warning("This customer presents moderate risk. Consider adjusting terms or reviewing manually.")
             else:
-                st.success("This customer is low risk and suitable for standard approval.")
+                st.success("This customer is low risk and suitable for approval.")
 
         st.subheader("Decision")
         display_decision(row, decision)
