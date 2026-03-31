@@ -308,8 +308,8 @@ elif page == "Credit Decision Tool":
             st.write(f"Strategy: {decision}")
         with col2:
             st.write("### Improved Profile")
-            st.metric(f"PD: {sim_row['PD']:.2%}")
-            st.metric(f"Expected Loss (R): {sim_row['EL']:,.2f}")
+            st.metric("PD", f"{sim_row['PD']:.2%}")
+            st.metric("Expected Loss (R)", f"{sim_row['EL']:,.2f}")
             st.write(f"Strategy: {sim_decision}")
             
         st.markdown("---")
