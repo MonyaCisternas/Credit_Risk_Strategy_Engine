@@ -6,6 +6,7 @@ sys.path.append(os.path.abspath("."))
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import joblib
 
 from src.feature_engineering import engineer_features
 from src.strategy import assign_strategy, generate_recommendations
