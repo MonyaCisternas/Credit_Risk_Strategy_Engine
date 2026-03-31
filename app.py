@@ -275,7 +275,7 @@ elif page == "Credit Decision Tool":
 
 
         st.subheader("How Customer Can Improve Risk Level")
-        st.caption("Ajust the variables below to see how the customer's risk profile improves.")
+        st.caption("Adjust the variables below to see how the customer's risk profile improves.")
         col1, col2 = st.columns(2)
         with col1:
             sim_util = st.slider("Simulate Credit Utilization", 0.0, 1.0, float(row["RevolvingUtilizationOfUnsecuredLines"]))
