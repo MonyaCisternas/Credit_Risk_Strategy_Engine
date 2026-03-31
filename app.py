@@ -53,13 +53,6 @@ if page == "Overview":
     st.write("Target Distribution:")
     st.write(df["SeriousDlqin2yrs"].value_counts())
     st.subheader("Portfolio Metrics")
-    high_risk = df[df["PD"] > 0.25]
-    potential_loss_reduction = high_risk["EL"].sum()
-    st.markdown("---")
-    st.metric(
-        "Potential Loss Reduction (High-Risk Rejection)",
-        f"R{potential_loss_reduction:,.0f}"
-    )
     approval_rate = (df["Strategy"] != "Decline / Collections").mean()
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -70,6 +63,13 @@ if page == "Overview":
         st.metric("Average PD", f"{df["PD"].mean():.2%}")
     st.write("High Risk %:", (df["PD"] > 0.25).mean())
     st.write("Decline %:", (df["Strategy"] == "Decline / Collections").mean())
+    high_risk = df[df["PD"] > 0.25]
+    potential_loss_reduction = high_risk["EL"].sum()
+    st.markdown("---")
+    st.metric(
+        "Potential Loss Reduction (High-Risk Rejection)",
+        f"R{potential_loss_reduction:,.0f}"
+    )
     st.subheader("PD Distribution")
     fig, ax = plt.subplots()
     ax.hist(df["PD"], bins = 30)
