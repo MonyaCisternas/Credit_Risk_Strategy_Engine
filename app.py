@@ -175,22 +175,43 @@ elif page == "Credit Decision Tool":
 
         explanation["impact_level"] = explanation["impact_score"].apply(get_impact_label)
                                                       
-        st.subheader("Decision")
-        st.write(f"Cluster: {row['Cluster']}")
-        st.write(f"PD: {row['PD']:.2%}")
-        st.write(f"Risk Level: {row['RiskBucket']}")
-        st.write(f"Expected Loss: {row['EL']:.2f}")
-        st.write(f"Credit Score: {row['Score']}")
-        
-        if "Decline" in decision:
-            st.error(f"❌ {decision}")
-        elif "High Interest" in decision:
-            st.warning(f"⚠️ {decision}")
-        elif "Premium" in decision:
-            st.success(f"✅ {decision}")
-        else:
-            st.info(f"ℹ️ {decision}")
+        def display_decision(row, decision):
+            risk = row["RiskBucket"]
+            pd_val = row["PD"]
+            el = row["EL"]
+            score = row["Score"]
+            if "Decline" in decision:
+                st.error("REJECT")
+            elif "High Interest" in decision:
+                st.warning("REVIEW / HIGH RISK")
+            elif "Premium" in decision:
+                st.success("APPROVED")
+            else:
+                st.info("CONDITIONAL")
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Risk Level", risk)
+            with col2:
+                st.metric("PD", f"{pd_val:.2%}")
+            with col3:
+                st.metric("Expected Loss (R)", f"{el:,.2f}")
+            with col4:
+                st.metric("Score", f"{score:.0f}")
 
+            st.markdown("---")
+            st.markdown("### Recommended Strategy")
+            st.info(decision)
+
+            if risk == "High":
+                st.error("This customer has a high likelihood of default and may result in financial loss.")
+            elif risk == "Medium":
+                st.warning("This customer presents moderate risk. Consider adjusting terms or reviewing manually.")
+            else:
+                st.success("This customer is low risk and suitable for standard approval.")
+
+        st.write("## Decision")
+        display_decision(row, decision)
+        
         st.subheader("Top Risk Drivers")
         feature_names_map = {
             "RevolvingUtilizationOfUnsecuredLines": "Credit Utilization",
