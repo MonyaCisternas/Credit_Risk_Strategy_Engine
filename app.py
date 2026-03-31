@@ -1,3 +1,4 @@
+st.write("App started")
 import sys
 import os
 
@@ -25,15 +26,24 @@ def get_pd_model(df):
 st.set_page_config(page_title = "Credit Risk Strategy Engine", layout = "wide")
 st.title("Customer Risk Segmentation & Strategy Engine")
 
+st.write("Loading data...")
 df = load_data()
+st.write("Cleaning data..")
 df = clean_data(df)
+st.write("Engineering features...")
 df = engineer_features(df)
+st.write("Segmenting customers...")
 df, kmeans, scaler, feature_cols = segment_customers(df)
+st.write("PD modelling...")
 pd_model, pd_features = get_pd_model(df)
 df["PD"] = predict_pd(pd_model, df, pd_features)
+st.write("Risck Buckets...")
 df["RiskBucket"] = df["PD"].apply(assign_risk_bucket)
+st.write("Scoring...")
 df["Score"] = df["PD"].apply(calculate_score)
+st.write("Strategy...")
 df["Strategy"] = df.apply(assign_strategy, axis = 1)
+st.write("EL...")
 df["EL"] = df.apply(calculate_expected_loss, axis = 1)
 
 st.sidebar.markdown("Credit Risk App")
