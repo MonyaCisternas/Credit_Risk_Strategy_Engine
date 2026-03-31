@@ -57,7 +57,7 @@ if page == "Overview":
     potential_loss_reduction = high_risk["EL"].sum()
     st.markdown("---")
     st.metric(
-        "💰 Potential Loss Reduction (High-Risk Rejection)",
+        "Potential Loss Reduction (High-Risk Rejection)",
         f"R{potential_loss_reduction:,.0f}"
     )
     approval_rate = (df["Strategy"] != "Decline / Collections").mean()
