@@ -1,4 +1,3 @@
-st.write("App started")
 import sys
 import os
 
