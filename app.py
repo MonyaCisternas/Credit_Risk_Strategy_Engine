@@ -67,6 +67,13 @@ if page == "Overview":
     fig, ax = plt.subplots()
     ax.hist(df["PD"], bins = 30)
     st.pyplot(fig)
+    high_risk = df[df["PD"] > 0.25]
+    potential_loss_reduction = high_risk["EL"].sum()
+    st.markdown("---")
+    st.metric(
+        "💰 Potential Loss Reduction (High-Risk Rejection)",
+        f"R{potential_loss_reduction:,.0f}"
+    )
 
 elif page == "Segment Insights":
     st.subheader("Segment Insights")
@@ -295,22 +302,33 @@ elif page == "Credit Decision Tool":
         st.write("### Simulation Results")
         col1, col2 = st.columns(2)
         with col1:
-            st.write("### Current")
-            st.write(f"PD: {row['PD']:.2%}")
+            st.markdown("### Current")
+            st.metric(f"PD: {row['PD']:.2%}")
+            st.metric(f"Expected Loss (R): {row['EL']:,.2f}")
             st.write(f"Strategy: {decision}")
-            st.write(f"Expected Loss (R): {row['EL']:,.2f}")
         with col2:
-            st.write("### Simulated")
-            st.write(f"PD: {sim_row['PD']:.2%}")
+            st.write("### Improved Profile")
+            st.metric(f"PD: {sim_row['PD']:.2%}")
+            st.metric(f"Expected Loss (R): {sim_row['EL']:,.2f}")
             st.write(f"Strategy: {sim_decision}")
-            st.write(f"Expected Loss (R): {sim_row['EL']:,.2f}")
+            
+        st.markdown("---")
+        st.markdown("### Impact Summary")
         delta_pd = sim_row["PD"] - row["PD"]
+        delta_el = sim_row["EL"] - row["EL"]
         if delta_pd < 0:
             st.success(f"Risk reduced by {abs(delta_pd):.2%}")
-            if sim_row["RiskBucket"] < row["RiskBucket"]:
-                st.success("Customer moved to a lower risk category")
-        else:
+        elif delta_pd > 0:
             st.error(f"Risk increased by {abs(delta_pd):.2%}")
+        else:
+            st.info("Risk remains unchanged")
+
+        if delta_el < 0:
+            st.success(f"Expected loss reduced by R{abs(delta_el):,.2f}")
+        elif delta_el > 0:
+            st.error(f"Expected loss increased by R{abs(delta_el):,.2f}")
+        else:
+            st.info("Expected loss remains unchanged")
 
     if st.button("Reset Customer"):
         st.session_state.clear()
