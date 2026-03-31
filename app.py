@@ -8,43 +8,30 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from src.data_loader import load_data
-from src.data_cleaning import clean_data
 from src.feature_engineering import engineer_features
-from src.segmentation import segment_customers
 from src.strategy import assign_strategy, generate_recommendations
 from src.risk import assign_risk_bucket
 from src.pd_model import train_pd_model, predict_pd, explain_prediction
 from src.loss import calculate_expected_loss
 from src.scorecard import calculate_score
 
-@st.cache_resource
-def get_pd_model(df):
-    model, features = train_pd_model(df)
-    return model, features
+@st.cache_data
+def load_data():
+    return pd.read_csv("Data/processed.csv")
+
+def load_assets():
+    pd_model = joblib.load("models/pd_model.pkl")
+    pd_features = joblib.load("models/pd_features.pkl")
+    kmeans = joblib.load("models/kmeans.pkl")
+    scaler = joblib.load("models/scaler.pkl")
+    feature_cols = joblib.load("models/feature_cols.pkl")
+    return pd_model, pd_features, kmeans, scaler, feature_cols
 
 st.set_page_config(page_title = "Credit Risk Strategy Engine", layout = "wide")
 st.title("Customer Risk Segmentation & Strategy Engine")
 
-st.write("Loading data...")
 df = load_data()
-st.write("Cleaning data..")
-df = clean_data(df)
-st.write("Engineering features...")
-df = engineer_features(df)
-st.write("Segmenting customers...")
-df, kmeans, scaler, feature_cols = segment_customers(df)
-st.write("PD modelling...")
-pd_model, pd_features = get_pd_model(df)
-df["PD"] = predict_pd(pd_model, df, pd_features)
-st.write("Risck Buckets...")
-df["RiskBucket"] = df["PD"].apply(assign_risk_bucket)
-st.write("Scoring...")
-df["Score"] = df["PD"].apply(calculate_score)
-st.write("Strategy...")
-df["Strategy"] = df.apply(assign_strategy, axis = 1)
-st.write("EL...")
-df["EL"] = df.apply(calculate_expected_loss, axis = 1)
+pd_model, pd_features, kmeans, scaler, feature_cols = load_assets()
 
 st.sidebar.markdown("Credit Risk App")
 st.sidebar.markdown("---")
