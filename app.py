@@ -29,7 +29,14 @@ def load_assets():
 
 st.set_page_config(page_title = "Customer Risk Segmentation & Strategy Engine", layout = "wide")
 st.title("Customer Risk & Strategy Engine")
-st.markdown("This tool helps lenders assess customer risk, assign strategies, and estimate expected loss.")
+st.info("""
+**How to use this tool:**
+1. Explore portfolio risk in *Overview*
+2. Analyze segments in *Segment Insights*
+3. Evaluate individual customers
+4. Test new applicants in *Credit Decision Tool*
+5. Use the simulator to reduce risk
+""")
 
 df = load_data()
 pd_model, pd_features, kmeans, scaler, feature_cols = load_assets()
@@ -47,9 +54,13 @@ if page == "Overview":
     st.write(df["SeriousDlqin2yrs"].value_counts())
     st.subheader("Portfolio Metrics")
     approval_rate = (df["Strategy"] != "Decline / Collections").mean()
-    st.write(f"Approval Rate: {approval_rate:.2%}")
-    st.write(f"Total Expected Loss: {df['EL'].sum():,.2f}")
-    st.write(f"Average PD: {df['PD'].mean():.2%}")
+    col1, col2, col3 = st.column(3)
+    with col1:
+        st.metric("Approval Rate", f"{approval_rate:.2f}")
+    with col2:
+        st.metric("Total Expected Loss (R)", f"{df["EL"].sum():,.0f}")
+    with col3:
+        st.metric("Average PD", f"{df["PD"].mean():.2%}")
     st.write("High Risk %:", (df["PD"] > 0.25).mean())
     st.write("Decline %:", (df["Strategy"] == "Decline / Collections").mean())
     st.subheader("PD Distribution")
@@ -89,7 +100,7 @@ elif page == "Customer Explorer":
     col1, col2 = st.columns(2)
     with col1:
         st.write("**Financials**")
-        st.write({"Income": f"{customer['MonthlyIncome']:.0f}", "Debt Burden": f"{customer['DebtBurden']:.2f}"})
+        st.write({"Income (R)": f"{customer['MonthlyIncome']:.0f}", "Debt Burden (R)": f"{customer['DebtBurden']:.2f}"})
     with col2:
         st.write("**Behaviour**")
         st.write({"Late Payments": int(customer["TotalLatePayments"]), "Utilization": customer["RevolvingUtilizationOfUnsecuredLines"]})
@@ -98,7 +109,7 @@ elif page == "Customer Explorer":
     st.write(f"Risk Level: {customer['RiskBucket']}")
     st.write(f"PD: {customer['PD']:.2%}")
     st.write(f"Credit Score: {customer['Score']}")
-    st.write(f"Expected Loss: {customer['EL']:.2f}")
+    st.write(f"Expected Loss (R): {customer['EL']:.2f}")
     st.success(customer["Strategy"])
 
 elif page == "Credit Decision Tool":
@@ -106,16 +117,16 @@ elif page == "Credit Decision Tool":
     col1, col2 = st.columns(2)
     with col1:
         age = st.number_input("Age", 18, 100, 30)
-        income = st.number_input("Monthly Income", 0, 100000, 5000)
-        debt_ratio = st.number_input("Debt Ratio", 0.0, 5.0, 0.5)
-        utilization = st.number_input("Credit Utilization", 0.0, 1.5, 0.5)
-        dependents = st.number_input("Number of Dependents", 0, 10, 0)
+        income = st.number_input("Monthly Income (R)", 0, 100000, 35000)
+        debt_ratio = st.number_input("Debt Ratio", 0.0, 5.0, 0.68)
+        utilization = st.number_input("Credit Utilization", 0.0, 1.5, 0.75)
+        dependents = st.number_input("Number of Dependents", 0, 10, 2)
     with col2:
-        late_30 = st.number_input("30-59 Days Late", 0, 50, 0)
-        late_60 = st.number_input("60-89 Days Late", 0, 50, 0)
+        late_30 = st.number_input("30-59 Days Late", 0, 50, 2)
+        late_60 = st.number_input("60-89 Days Late", 0, 50, 1)
         late_90 = st.number_input("90 Days Late", 0, 50, 0)
-        open_lines = st.number_input("Open Credit Lines", 0, 50, 5)
-        real_estate = st.number_input("Real Estate Loans", 0, 20, 0)
+        open_lines = st.number_input("Open Credit Lines", 0, 50, 8)
+        real_estate = st.number_input("Real Estate Loans", 0, 20, 1)
         
     if st.button("Evaluate Customer"):
         st.session_state["customer_data"] = pd.DataFrame([{
@@ -209,8 +220,9 @@ elif page == "Credit Decision Tool":
             else:
                 st.success("This customer is low risk and suitable for standard approval.")
 
-        st.write("## Decision")
+        st.subheader("Decision")
         display_decision(row, decision)
+        st.markdown("---")
         
         st.subheader("Top Risk Drivers")
         feature_names_map = {
@@ -255,13 +267,14 @@ elif page == "Credit Decision Tool":
                 st.write(f"* {rec}")
 
 
-        st.subheader("Improvement Simulator")
+        st.subheader("How Customer Can Improve Risk Level")
+        st.caption("Ajust the variables below to see how the customer's risk profile improves.")
         col1, col2 = st.columns(2)
         with col1:
             sim_util = st.slider("Simulate Credit Utilization", 0.0, 1.0, float(row["RevolvingUtilizationOfUnsecuredLines"]))
             sim_debt = st.slider("Simulate Debt Ratio", 0.0, 2.0, float(row["DebtRatio"]))
         with col2:
-            sim_income = st.slider("Simulate Monthly Income", 0, 50000, int(row["MonthlyIncome"]))
+            sim_income = st.slider("Simulate Monthly Income (R)", 0, 50000, int(row["MonthlyIncome"]))
             sim_late = st.slider("Simulate Late Payments", 0, 10, int(row.get("TotalLatePayments", 0)))
         sim_customer["RevolvingUtilizationOfUnsecuredLines"] = sim_util
         sim_customer["DebtRatio"] = sim_debt
@@ -275,21 +288,23 @@ elif page == "Credit Decision Tool":
         sim_row = sim_customer.iloc[0]
         sim_decision = sim_row["Strategy"]
         
-        st.write("Simulation Results")
+        st.write("### Simulation Results")
         col1, col2 = st.columns(2)
         with col1:
             st.write("### Current")
             st.write(f"PD: {row['PD']:.2%}")
             st.write(f"Strategy: {decision}")
-            st.write(f"Expected Loss: {row['EL']:,.2f}")
+            st.write(f"Expected Loss (R): {row['EL']:,.2f}")
         with col2:
             st.write("### Simulated")
             st.write(f"PD: {sim_row['PD']:.2%}")
             st.write(f"Strategy: {sim_decision}")
-            st.write(f"Expected Loss: {sim_row['EL']:,.2f}")
+            st.write(f"Expected Loss (R): {sim_row['EL']:,.2f}")
         delta_pd = sim_row["PD"] - row["PD"]
         if delta_pd < 0:
             st.success(f"Risk reduced by {abs(delta_pd):.2%}")
+            if sim_row["RiskBucket"] < row["RiskBucket"]:
+                st.success("Customer moved to a lower risk category")
         else:
             st.error(f"Risk increased by {abs(delta_pd):.2%}")
 
