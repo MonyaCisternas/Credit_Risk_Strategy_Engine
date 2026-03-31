@@ -273,13 +273,17 @@ elif page == "Credit Decision Tool":
         with col1:
             sim_util = st.slider("Simulate Credit Utilization", 0.0, 1.0, float(row["RevolvingUtilizationOfUnsecuredLines"]))
             sim_debt = st.slider("Simulate Debt Ratio", 0.0, 2.0, float(row["DebtRatio"]))
-        with col2:
             sim_income = st.slider("Simulate Monthly Income (R)", 0, 50000, int(row["MonthlyIncome"]))
-            sim_late = st.slider("Simulate Late Payments", 0, 10, int(row.get("TotalLatePayments", 0)))
+        with col2:
+            sim_30 = st.slider("30-59 Days Late", 0, 10, int(row["NumberOfTime30-59DaysPastDueNotWorse"]))
+            sim_60 = st.slider("60-89 Days Late", 0, 10, int(row["NumberOfTime60-89DaysPastDueNotWorse"]))
+            sim_90 = st.slider("90+ Days Late", 0, 10, int(row["NumberOfTimes90DaysLate"]))
         sim_customer["RevolvingUtilizationOfUnsecuredLines"] = sim_util
         sim_customer["DebtRatio"] = sim_debt
         sim_customer["MonthlyIncome"] = sim_income
-        sim_customer["TotalLatePayments"] = sim_late
+        sim_customer["NumberOfTime30-59DaysPastDueNotWorse"] = sim_30
+        sim_customer["NumberOfTime60-89DaysPastDueNotWorse"] = sim_60
+        sim_customer["NumberOfTimes90DaysLate"] = sim_90
         sim_customer = engineer_features(sim_customer)
         sim_customer["PD"] = predict_pd(pd_model, sim_customer, pd_features)
         sim_customer["RiskBucket"] = sim_customer["PD"].apply(assign_risk_bucket)
