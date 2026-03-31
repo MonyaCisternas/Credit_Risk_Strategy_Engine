@@ -27,8 +27,9 @@ def load_assets():
     feature_cols = joblib.load("models/feature_cols.pkl")
     return pd_model, pd_features, kmeans, scaler, feature_cols
 
-st.set_page_config(page_title = "Credit Risk Strategy Engine", layout = "wide")
-st.title("Customer Risk Segmentation & Strategy Engine")
+st.set_page_config(page_title = "Customer Risk Segmentation & Strategy Engine", layout = "wide")
+st.title("Customer Risk & Strategy Engine")
+st.markdown("This tool helps lenders assess customer risk, assign strategies, and estimate expected loss.")
 
 df = load_data()
 pd_model, pd_features, kmeans, scaler, feature_cols = load_assets()
